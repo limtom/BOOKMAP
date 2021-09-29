@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+/* eslint-disable no-console */ /* eslint-disable no-console */
 <template>
   <client-only>
     <l-map
@@ -8,6 +8,7 @@
       @ready="getLocation"
       @locationfound="locationFound($event)"
       @locationerror="locationError"
+      @popupopen="getPopup"
     >
       <l-control-layers
         position="topright"
@@ -22,10 +23,16 @@
         :attribution="tileProvider.attribution"
         layer-type="base"
       />
-      <l-marker v-if="locationReady" :lat-lng="userLocation"></l-marker>
       <v-locatecontrol></v-locatecontrol>
       <l-control position="topleft">
-        <v-btn class="pa-1" color="" outlined max-width="35" max-height="35">
+        <v-btn
+          class="pa-1"
+          color=""
+          outlined
+          max-width="35"
+          max-height="35"
+          @click="attachMapEvent"
+        >
           <v-icon small color="#444" class="">mdi-pin</v-icon>
         </v-btn>
       </l-control>
@@ -39,7 +46,7 @@ export default {
   data() {
     return {
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      zoom: 8,
+      zoom: 12,
       center: null,
       userLocation: [],
       tileProviders: [
@@ -66,6 +73,27 @@ export default {
         },
       ],
       locationReady: false,
+      addBookmarkStatus: false,
+      temp: `<form id="comment-form" style="
+        width: 300px;" class="d-flex flex-column">
+        <label for="fname" class="text-subtitle-2 mb-1">Title</label>
+        <input type="text" placeholder="input first name" name="fname" style="height: 40px;
+        font-size: 16px;
+        padding-left: 12px;
+        padding-right: 12px;
+        margin-bottom: 5px;
+        border:1px solid;" class="rounded text-caption">
+        <label for="description" class="text-subtitle-2 mb-0 mt-2">Description</label>
+        <textarea name="description" placeholder="Enter place description" id="" cols="30" rows="3" style="height: 100px;
+        font-size: 16px;
+        padding-left: 12px;
+        padding-top: 4px;
+        padding-bottom: 4px;
+        padding-right: 12px;
+        margin-bottom: 20px;
+        border:1px solid;" class="rounded text-caption"></textarea>
+        <button type="submit" class="v-btn success pa-1 font-weight-bold" style="width:100px; height:35px; background-color:white; border:1px solid green;">Submit</button> 
+    </form>`,
     }
   },
   methods: {
@@ -97,6 +125,34 @@ export default {
     locationError(event) {
       //   console.log(event.message)
     },
+
+    attachMapEvent() {
+      // Attach an event listener on the map it self
+      this.$refs.map.mapObject.addEventListener('click', (event) => {
+        // Create a marker at the point of click
+        const marker = this.$L.marker(Object.values(event.latlng))
+        // Add the marker to the map
+        this.$refs.map.mapObject.addLayer(marker)
+        marker.bindPopup(this.temp)
+        this.$refs.map.mapObject.removeEventListener('click')
+      })
+    },
+
+    getPopup(event) {
+      // Get the pop up element
+      const popUpElement = event.popup.getElement()
+      // Get the id of the form
+      const form = popUpElement.querySelector('#comment-form')
+      // Attach an event to the form
+      form.addEventListener('submit', (e) => {
+        // Get form data using form data
+        const data = new FormData(form)
+        const value = Object.fromEntries(data.entries())
+        event.popup.removeFrom(this.$refs.map.mapObject)
+        console.log(value)
+        e.preventDefault()
+      })
+    },
   },
 }
 </script>
@@ -107,5 +163,45 @@ export default {
   background-color: white;
   min-width: 35px !important;
   border: 2px solid rgb(185, 183, 183);
+}
+
+.leaflet-popup-content-wrapper {
+  min-width: 500 !important;
+}
+
+#text-field {
+  height: 40px !important;
+}
+form {
+  padding: 12px;
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+label {
+  font-size: 16px;
+}
+input {
+  height: 30px;
+  font-size: 16px;
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+textarea {
+  height: 100px;
+  font-size: 16px;
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-top: 4px;
+  margin-bottom: 10px;
+}
+
+button {
+  height: 35px;
+  font-size: 16px;
+  width: 100px;
 }
 </style>

@@ -2,7 +2,12 @@
   <v-row justify="center" align="center">
     <v-col cols="12" sm="8" md="6">
       <div class="text-center">
-        <Regform action="Sign-in" :is-signup="false"> </Regform>
+        <Regform
+          action="Sign-in"
+          :is-signup="false"
+          @form-action="createUser($event)"
+        >
+        </Regform>
       </div>
     </v-col>
   </v-row>
@@ -17,8 +22,9 @@ export default {
   },
   layout: 'main',
   methods: {
-    update(e) {
-      this.$emit('updateInput', e.target.value)
+    createUser(userInfo) {
+      // Add user to database
+      alert(userInfo.email)
     },
   },
 }

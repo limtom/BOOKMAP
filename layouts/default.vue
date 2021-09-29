@@ -4,7 +4,7 @@
       <v-toolbar-title v-text="title" />
     </v-app-bar>
     <v-main>
-      <v-container fluid class="fill-height pa-0">
+      <v-container fluid class="fill-height pa-0 justify-center">
         <nuxt />
       </v-container>
     </v-main>
